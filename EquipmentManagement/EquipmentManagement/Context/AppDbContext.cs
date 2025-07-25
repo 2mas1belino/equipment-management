@@ -1,7 +1,7 @@
 ﻿using EquipmentManagement.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace EquipmentManagement.Server.Data;
+namespace EquipmentManagement.Context;
 
 public class AppDbContext : DbContext
 {
