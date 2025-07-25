@@ -102,5 +102,37 @@ namespace EquipmentManagement.Controllers
         {
             return _context.Equipments.Any(e => e.Id == id);
         }
+
+        // POST api/equipment/{id}/upload-image
+        [HttpPost("{id}/upload-image")]
+        public async Task<IActionResult> UploadImage(int id, IFormFile file)
+        {
+            var equipment = await _context.Equipments.FindAsync(id);
+            if (equipment == null) return NotFound();
+
+            if (file == null || file.Length == 0)
+                return BadRequest("No file uploaded");
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await file.CopyToAsync(memoryStream);
+                equipment.ImageData = memoryStream.ToArray();
+                equipment.ImageContentType = file.ContentType;
+                await _context.SaveChangesAsync();
+            }
+
+            return NoContent();
+        }
+
+        // GET api/equipment/{id}/image
+        [HttpGet("{id}/image")]
+        public async Task<IActionResult> GetImage(int id)
+        {
+            var equipment = await _context.Equipments.FindAsync(id);
+            if (equipment?.ImageData == null)
+                return NotFound();
+
+            return File(equipment.ImageData, equipment.ImageContentType);
+        }
     }
 }
