@@ -1,0 +1,45 @@
+﻿@page "/equipment/{equipmentId}/availability"
+@using EquipmentManagement.Shared.Models
+@inject HttpClient Http
+
+<h3>Availability for Equipment @equipmentId</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var period in availabilityPeriods)
+        {
+            <tr>
+                <td>@period.StartDate.ToShortDateString()</td>
+                <td>@period.EndDate.ToShortDateString()</td>
+                <td>
+                    <button @onclick="() => DeletePeriod(period.Id)">Delete</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public int equipmentId { get; set; }
+    private AvailabilityPeriod[] availabilityPeriods = Array.Empty<AvailabilityPeriod>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        availabilityPeriods = await Http.GetFromJsonAsync<AvailabilityPeriod[]>(
+            $"api/equipment/{equipmentId}/availability");
+    }
+
+    private async Task DeletePeriod(int id)
+    {
+        await Http.DeleteAsync($"api/equipment/availability/{id}");
+        availabilityPeriods = await Http.GetFromJsonAsync<AvailabilityPeriod[]>(
+            $"api/equipment/{equipmentId}/availability");
+    }
+}

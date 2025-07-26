@@ -134,5 +134,42 @@ namespace EquipmentManagement.Controllers
 
             return File(equipment.ImageData, equipment.ImageContentType);
         }
+
+        // POST api/equipment/{id}/availability
+        [HttpPost("{equipmentId}/availability")]
+        public async Task<ActionResult<AvailabilityPeriod>> AddAvailability(
+            int equipmentId,
+            [FromBody] AvailabilityPeriod period)
+        {
+            period.EquipmentId = equipmentId; // Ensure correct equipment association
+            _context.AvailabilityPeriods.Add(period);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(
+                nameof(GetAvailability), 
+                new { equipmentId = period.EquipmentId },
+                period);
+        }
+
+        // GET api/equipment/{id}/availability
+        [HttpGet("{equipmentId}/availability")]
+        public async Task<ActionResult<List<AvailabilityPeriod>>> GetAvailability(int equipmentId)
+        {
+            return await _context.AvailabilityPeriods
+                .Where(a => a.EquipmentId == equipmentId)
+                .OrderBy(a => a.StartDate)
+                .ToListAsync();
+        }
+
+        // DELETE api/equipment/availability/{id}
+        [HttpDelete("availability/{id}")]
+        public async Task<IActionResult> DeleteAvailability(int id)
+        {
+            var period = await _context.AvailabilityPeriods.FindAsync(id);
+            if (period == null) return NotFound();
+
+            _context.AvailabilityPeriods.Remove(period);
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }

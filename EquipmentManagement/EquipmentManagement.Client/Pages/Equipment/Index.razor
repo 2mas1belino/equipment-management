@@ -1,0 +1,67 @@
+﻿@page "/equipments" 
+@using System.Text.Json
+@inject HttpClient Http;
+
+<h3>Equipment List</h3>  
+
+@if (equipments == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!equipments.Any())
+{
+    <p><em>No equipment found.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Model</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in equipments)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>@item.Model</td>
+                    <td>@item.Description</td>
+                    <td>
+                        <a href="/equipment/@item.Id/calendar" class="btn btn-info btn-sm">View Calendar</a>
+                        <button @onclick="() => DeleteEquipment(item.Id)" class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Equipment>? equipments;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            equipments = await Http.GetFromJsonAsync<List<Equipment>>("api/equipment");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading equipment: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteEquipment(int id)
+    {
+        var response = await Http.DeleteAsync($"api/equipment/{id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            equipments = await Http.GetFromJsonAsync<List<Equipment>>("api/equipment");
+        }
+    }
+}
