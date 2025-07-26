@@ -1,0 +1,80 @@
+﻿@page "/equipment/{id}"
+@inject HttpClient Http
+@inject NavigationManager NavManager
+
+@if (equipment == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="equipment-details">
+        <h3>Equipment Details</h3>
+
+        <div class="details-container">
+            <div class="image-section">
+                @if (HasImage)
+                {
+                    <img src="@ImageUrl" alt="@equipment.Name" class="equipment-image" />
+                }
+                else
+                {
+                    <div class="no-image">No Image Available</div>
+                }
+            </div>
+
+            <div class="info-section">
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <span class="detail-value">@equipment.Name</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Model:</span>
+                    <span class="detail-value">@equipment.Model</span>
+                </div>
+
+                <div class="detail-row">
+                    <span class="detail-label">Description:</span>
+                    <span class="detail-value">@equipment.Description</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button @onclick="NavigateToEdit" class="btn btn-primary">Edit</button>
+            <button @onclick="ReturnToList" class="btn btn-secondary">Back to List</button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Equipment? equipment;
+    private string? ImageUrl => HasImage ? $"data:{equipment!.ImageContentType};base64,{Convert.ToBase64String(equipment.ImageData!)}" : null;
+    private bool HasImage => equipment?.ImageData != null && equipment.ImageContentType != null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        try
+        {
+            equipment = await Http.GetFromJsonAsync<Equipment>($"api/equipment/{Id}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading equipment: {ex.Message}");
+        }
+    }
+
+    private void NavigateToEdit()
+    {
+        NavManager.NavigateTo($"/equipment/edit/{Id}");
+    }
+
+    private void ReturnToList()
+    {
+        NavManager.NavigateTo("/equipments");
+    }
+}
