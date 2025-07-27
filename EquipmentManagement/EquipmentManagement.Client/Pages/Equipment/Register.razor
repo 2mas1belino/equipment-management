@@ -57,14 +57,12 @@
     {
         try
         {
-            // First create the equipment
             var response = await Http.PostAsJsonAsync("api/equipment", newEquipment);
 
             if (response.IsSuccessStatusCode)
             {
                 var createdEquipment = await response.Content.ReadFromJsonAsync<Equipment>();
 
-                // Then upload the image if one was selected
                 if (selectedFile != null && createdEquipment != null)
                 {
                     await UploadImage(createdEquipment.Id, selectedFile);
