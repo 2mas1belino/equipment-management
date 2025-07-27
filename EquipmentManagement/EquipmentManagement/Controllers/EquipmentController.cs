@@ -135,6 +135,7 @@ namespace EquipmentManagement.Controllers
             return File(equipment.ImageData, equipment.ImageContentType);
         }
 
+
         // POST api/equipment/{id}/availability
         [HttpPost("{equipmentId}/availability")]
         public async Task<ActionResult<AvailabilityPeriod>> AddAvailability(
