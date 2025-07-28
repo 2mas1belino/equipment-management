@@ -1,4 +1,5 @@
 ﻿using EquipmentManagement.Shared.Models;
+using EquipmentManagement.Shared.Dtos;
 using EquipmentManagement.Context;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,27 +20,53 @@ namespace EquipmentManagement.Controllers
 
         // GET: api/equipment
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Equipment>>> GetEquipments()
+        public async Task<ActionResult<IEnumerable<EquipmentDto>>> GetEquipments()
         {
             return await _context.Equipments
                 .Include(e => e.AvailabilityPeriods)
+                .Select(e => new EquipmentDto
+                {
+                    Id = e.Id,
+                    Name = e.Name,
+                    Model = e.Model,
+                    Description = e.Description,
+                    ImageContentType = e.ImageContentType,
+                    AvailabilityPeriods = e.AvailabilityPeriods.Select(a => new AvailabilityPeriodDto
+                    {
+                        Id = a.Id,
+                        StartDate = a.StartDate,
+                        EndDate = a.EndDate,
+                        EquipmentId = a.EquipmentId
+                    }).ToList()
+                })
                 .ToListAsync();
         }
 
         // GET: api/equipment/{id}
         [HttpGet("{id}")]
-        public async Task<ActionResult<Equipment>> GetEquipment(int id)
+        public async Task<ActionResult<EquipmentDto>> GetEquipment(int id)
         {
             var equipment = await _context.Equipments
                 .Include(e => e.AvailabilityPeriods)
                 .FirstOrDefaultAsync(e => e.Id == id);
 
-            if (equipment == null)
-            {
-                return NotFound();
-            }
+            if (equipment == null) return NotFound();
 
-            return equipment;
+            return new EquipmentDto
+            {
+                Id = equipment.Id,
+                Name = equipment.Name,
+                Model = equipment.Model,
+                Description = equipment.Description,
+                ImageContentType = equipment.ImageContentType,
+                AvailabilityPeriods = equipment.AvailabilityPeriods.Select(a => new AvailabilityPeriodDto
+                {
+                    Id = a.Id,
+                    StartDate = a.StartDate,
+                    EndDate = a.EndDate,
+                    EquipmentId = a.EquipmentId
+                }).ToList()
+            };
         }
 
         // PUT: api/equipment/{id}
@@ -74,12 +101,26 @@ namespace EquipmentManagement.Controllers
 
         // POST: api/equipment
         [HttpPost]
-        public async Task<ActionResult<Equipment>> PostEquipment(Equipment equipment)
+        public async Task<ActionResult<EquipmentDto>> PostEquipment(EquipmentCreateDto createDto)
         {
+            var equipment = new Equipment
+            {
+                Name = createDto.Name,
+                Model = createDto.Model,
+                Description = createDto.Description
+            };
+
             _context.Equipments.Add(equipment);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetEquipment", new { id = equipment.Id }, equipment);
+            return CreatedAtAction(nameof(GetEquipment), new { id = equipment.Id },
+                new EquipmentDto
+                {
+                    Id = equipment.Id,
+                    Name = equipment.Name,
+                    Model = equipment.Model,
+                    Description = equipment.Description
+                });
         }
 
         // DELETE: api/equipment/{id}

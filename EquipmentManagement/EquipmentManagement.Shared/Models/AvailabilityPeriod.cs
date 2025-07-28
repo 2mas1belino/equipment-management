@@ -1,5 +1,4 @@
 ﻿namespace EquipmentManagement.Shared.Models;
-
 public class AvailabilityPeriod
 {
     public int Id { get; set; }

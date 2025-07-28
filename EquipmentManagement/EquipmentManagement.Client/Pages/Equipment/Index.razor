@@ -4,7 +4,11 @@
 
 <h3>Equipment List</h3>  
 
-@if (equipments == null)
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (equipments == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -42,13 +46,14 @@ else
 }
 
 @code {
-    private List<Equipment>? equipments;
+    private List<EquipmentDto>? equipments;
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            equipments = await Http.GetFromJsonAsync<List<Equipment>>("api/equipment");
+            equipments = await Http.GetFromJsonAsync<List<EquipmentDto>>("api/equipment");
         }
         catch (Exception ex)
         {
@@ -62,7 +67,7 @@ else
 
         if (response.IsSuccessStatusCode)
         {
-            equipments = await Http.GetFromJsonAsync<List<Equipment>>("api/equipment");
+            equipments = await Http.GetFromJsonAsync<List<EquipmentDto>>("api/equipment");
         }
     }
 }
