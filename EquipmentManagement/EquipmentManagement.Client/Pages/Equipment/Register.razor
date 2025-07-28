@@ -34,6 +34,26 @@
         }
     </div>
 
+    <div class="availability-section">
+        <h4>Set Availability</h4>
+    
+        <div class="period-input">
+            <InputDate @bind-Value="newPeriod.StartDate" />
+            <InputDate @bind-Value="newPeriod.EndDate" />
+            <button type="button" @onclick="AddPeriod">Add Period</button>
+        </div>
+
+        <div class="periods-preview">
+            @foreach (var p in localPeriods)
+            {
+                <div class="period-badge">
+                    @p.StartDate.ToString("g") - @p.EndDate.ToString("g")
+                    <button type="button" @onclick="() => RemovePeriod(p)">×</button>
+                </div>
+            }
+        </div>
+    </div>
+
     <button type="submit" class="btn btn-primary mt-3">Register</button>
     <button type="button" class="btn btn-secondary mt-3 ml-2" @onclick="Cancel">Cancel</button>
 </EditForm>
@@ -42,6 +62,8 @@
     private Equipment newEquipment = new();
     private string? imagePreviewUrl;
     private IBrowserFile? selectedFile;
+    private List<AvailabilityPeriod> localPeriods = new();
+    private AvailabilityPeriod newPeriod = new();
 
     private async Task HandleFileUpload(InputFileChangeEventArgs e)
     {
@@ -53,6 +75,34 @@
         imagePreviewUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
     }
 
+    private async Task UploadImage(int equipmentId, IBrowserFile file)
+    {
+        using var content = new MultipartFormDataContent();
+        using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
+        content.Add(new StreamContent(fileStream), "file", file.Name);
+
+        await Http.PostAsync($"api/equipment/{equipmentId}/upload-image", content);
+    }
+
+    private void AddPeriod()
+    {
+        if (newPeriod.StartDate < newPeriod.EndDate)
+        {
+            localPeriods.Add(new AvailabilityPeriod {
+                StartDate = newPeriod.StartDate,
+                EndDate = newPeriod.EndDate
+            });
+            newPeriod = new(); // reset
+        }
+
+        Console.WriteLine($"Local periods list: {localPeriods}");
+    }
+
+    private void RemovePeriod(AvailabilityPeriod period)
+    {
+        localPeriods.Remove(period);
+    }
+
     private async Task HandleValidSubmit()
     {
         try
@@ -61,7 +111,23 @@
 
             if (response.IsSuccessStatusCode)
             {
+                Console.WriteLine("Criei o equipamento!");
+
                 var createdEquipment = await response.Content.ReadFromJsonAsync<Equipment>();
+
+                foreach (var period in localPeriods)
+                {
+                    var periodToSend = new AvailabilityPeriod 
+                    {
+                        StartDate = period.StartDate,
+                        EndDate = period.EndDate,
+                        EquipmentId = createdEquipment.Id
+                    };
+                
+                    await Http.PostAsJsonAsync(
+                        $"api/equipment/{createdEquipment.Id}/availability", 
+                        periodToSend);
+                }
 
                 if (selectedFile != null && createdEquipment != null)
                 {
@@ -75,15 +141,6 @@
         {
             Console.WriteLine($"Error: {ex.Message}");
         }
-    }
-
-    private async Task UploadImage(int equipmentId, IBrowserFile file)
-    {
-        using var content = new MultipartFormDataContent();
-        using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
-        content.Add(new StreamContent(fileStream), "file", file.Name);
-
-        await Http.PostAsync($"api/equipment/{equipmentId}/upload-image", content);
     }
 
     private void Cancel()
