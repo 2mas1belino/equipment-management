@@ -115,6 +115,7 @@
     .calendar-day.today {
         background-color: rgba(25, 113, 194, 0.1);
         border: 1px solid rgba(25, 113, 194, 0.3);
+        color: #1890ff;
     }
 
     .calendar-day:hover:not(.empty) {
@@ -125,6 +126,30 @@
         background-color: #e3f2fd;
         border: 1px solid #bbdefb;
     }
+
+    .calendar-day.other-month {
+        opacity: 0.5;
+        color: #999;
+        background-color: #f9f9f9;
+    }
+
+        .calendar-day.other-month .day-number {
+            color: #999;
+        }
+
+        .calendar-day.other-month .badge {
+            opacity: 0.7;
+        }
+
+    .calendar-day.today.other-month {
+        opacity: 1;
+        background-color: rgba(25, 113, 194, 0.1);
+        border: 1px solid rgba(25, 113, 194, 0.3);
+    }
+
+        .calendar-day.today.other-month .day-number {
+            color: #1890ff;
+        }
 
 .day-number {
     font-size: 1.1rem;
