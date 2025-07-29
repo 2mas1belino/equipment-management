@@ -20,27 +20,46 @@ namespace EquipmentManagement.Controllers
 
         // GET: api/equipment
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EquipmentDto>>> GetEquipments()
+        public async Task<ActionResult<PaginatedResult<EquipmentDto>>> GetEquipments(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
         {
-            return await _context.Equipments
-                .Include(e => e.AvailabilityPeriods)
-                .Select(e => new EquipmentDto
-                {
-                    Id = e.Id,
-                    Name = e.Name,
-                    Model = e.Model,
-                    Description = e.Description,
-                    ImageData = e.ImageData,
-                    ImageContentType = e.ImageContentType,
-                    AvailabilityPeriods = e.AvailabilityPeriods.Select(a => new AvailabilityPeriodDto
+            var query = _context.Equipments.Include(e => e.AvailabilityPeriods);
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PaginatedResult<EquipmentDto>
+            {
+                Data = items.Select(MapToDto).ToList(),  // Using the mapping method here
+                TotalCount = totalItems,
+                PageNumber = page,
+                PageSize = pageSize
+            };
+        }
+
+        private EquipmentDto MapToDto(Equipment equipment)
+        {
+            return new EquipmentDto
+            {
+                Id = equipment.Id,
+                Name = equipment.Name,
+                Model = equipment.Model,
+                Description = equipment.Description,
+                ImageData = equipment.ImageData,
+                ImageContentType = equipment.ImageContentType,
+                AvailabilityPeriods = equipment.AvailabilityPeriods?
+                    .Select(a => new AvailabilityPeriodDto
                     {
                         Id = a.Id,
                         StartDate = a.StartDate,
                         EndDate = a.EndDate,
                         EquipmentId = a.EquipmentId
-                    }).ToList()
-                })
-                .ToListAsync();
+                    }).ToList() ?? new()
+            };
         }
 
         // GET: api/equipment/{id}
