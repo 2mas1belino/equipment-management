@@ -1,4 +1,5 @@
 ﻿@page "/equipment/register"
+@using EquipmentManagement.Shared.Models
 @inject HttpClient Http
 @inject NavigationManager NavManager
 
@@ -8,107 +9,124 @@
     <DataAnnotationsValidator />
     <ValidationSummary />
 
-    <div class="form-group">
-        <label for="name">Name:</label>
-        <InputText id="name" @bind-Value="newEquipment.Name" class="form-control" />
-        <ValidationMessage For="@(() => newEquipment.Name)" />
-    </div>
+    <div class="equipment-details">
+        <div class="details-container">
+            <div class="image-section">
+                @if (imagePreviewUrl != null)
+                {
+                    <div class="image-container">
+                        <img src="@imagePreviewUrl" alt="Preview" class="equipment-image" />
+                        <button type="button" class="btn btn-danger btn-sm delete-image-btn"
+                                @onclick="ClearImage">
+                            <span class="oi oi-trash"></span> Delete Image
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="no-image">No Image Selected</div>
+                }
+                <InputFile OnChange="@HandleFileUpload" class="form-control mt-2" />
+            </div>
 
-    <div class="form-group">
-        <label for="model">Model:</label>
-        <InputText id="model" @bind-Value="newEquipment.Model" class="form-control" />
-        <ValidationMessage For="@(() => newEquipment.Model)" />
-    </div>
-
-    <div class="form-group">
-        <label for="description">Description:</label>
-        <InputTextArea @bind-Value="newEquipment.Description" 
-                       placeholder="Enter description (optional)"
-                       class="form-control detail-value" />
-    </div>
-
-    <div class="form-group">
-        <label>Equipment Image:</label>
-        <InputFile OnChange="@HandleFileUpload" class="form-control" />
-        @if (imagePreviewUrl != null)
-        {
-            <img src="@imagePreviewUrl" alt="Preview" style="max-height: 200px; margin-top: 10px;" />
-        }
-    </div>
-
-    <div class="availability-section">
-        <h4>Set Availability</h4>
-        
-        <div class="period-input card mb-3 p-3">
-            <div class="row g-3">
-                <div class="col-md-5">
-                    <label class="form-label">Start Date</label>
-                    <InputDate @bind-Value="newPeriod.StartDate" 
-                             min="@DateTime.Today.ToString("yyyy-MM-dd")"
-                             class="form-control" />
-                    <ValidationMessage For="@(() => newPeriod.StartDate)" />
+            <div class="info-section">
+                <div class="detail-row">
+                    <span class="detail-label">Name:</span>
+                    <InputText @bind-Value="newEquipment.Name" class="form-control detail-value" />
+                    <ValidationMessage For="@(() => newEquipment.Name)" />
                 </div>
-    
-                <div class="col-md-5">
-                    <label class="form-label">End Date</label>
-                    <InputDate @bind-Value="newPeriod.EndDate" 
-                             min="@newPeriod.StartDate.ToString("yyyy-MM-dd")"
-                             class="form-control" />
-                    <ValidationMessage For="@(() => newPeriod.EndDate)" />
+
+                <div class="detail-row">
+                    <span class="detail-label">Model:</span>
+                    <InputText @bind-Value="newEquipment.Model" class="form-control detail-value" />
+                    <ValidationMessage For="@(() => newEquipment.Model)" />
                 </div>
-                
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="button" class="btn btn-primary w-100" 
-                            @onclick="AddPeriod" disabled="@(!CanAddPeriod)">
-                        Add
-                    </button>
+
+                <div class="detail-row">
+                    <span class="detail-label">Description:</span>
+                    <InputTextArea @bind-Value="newEquipment.Description"
+                                   placeholder="Enter description (optional)"
+                                   class="form-control detail-value" />
                 </div>
             </div>
-            
-            @if (!string.IsNullOrEmpty(periodError))
+        </div>
+
+        <div class="availability-section">
+            <h4>Set Availability</h4>
+
+            <div class="period-input card mb-3 p-3">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Start Date</label>
+                        <InputDate @bind-Value="newPeriod.StartDate"
+                                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                   class="form-control" />
+                        <ValidationMessage For="@(() => newPeriod.StartDate)" />
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label">End Date</label>
+                        <InputDate @bind-Value="newPeriod.EndDate"
+                                   min="@newPeriod.StartDate.ToString("yyyy-MM-dd")"
+                                   class="form-control" />
+                        <ValidationMessage For="@(() => newPeriod.EndDate)" />
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary w-100"
+                                @onclick="AddPeriod" disabled="@(!CanAddPeriod)">
+                            Add
+                        </button>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(periodError))
+                {
+                    <div class="text-danger mt-2">@periodError</div>
+                }
+            </div>
+
+            @if (localPeriods.Any())
             {
-                <div class="text-danger mt-2">@periodError</div>
+                <div class="periods-list card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Selected Availability Periods</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            @foreach (var period in localPeriods.OrderBy(p => p.StartDate))
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>@period.StartDate.ToString("dd-MM-yyyy")</strong> to
+                                        <strong>@period.EndDate.ToString("dd-MM-yyyy")</strong>
+                                        <span class="text-muted ms-2">
+                                            (@((period.EndDate - period.StartDate).TotalDays + 1) days)
+                                        </span>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                            @onclick="() => RemovePeriod(period)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    No availability periods added yet. Equipment will be marked as unavailable.
+                </div>
             }
         </div>
 
-        @if (localPeriods.Any())
-        {
-            <div class="periods-list card">
-                <div class="card-header">
-                    <h5 class="mb-0">Selected Availability Periods</h5>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        @foreach (var period in localPeriods.OrderBy(p => p.StartDate))
-                        {
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>@period.StartDate.ToString("dd-MM-yyyy")</strong> to 
-                                    <strong>@period.EndDate.ToString("dd-MM-yyyy")</strong>
-                                    <span class="text-muted ms-2">
-                                        (@((period.EndDate - period.StartDate).TotalDays + 1) days)
-                                    </span>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-outline-danger"
-                                        @onclick="() => RemovePeriod(period)">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="alert alert-info">
-                No availability periods added yet. Equipment will be marked as unavailable.
-            </div>
-        }
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Register</button>
+            <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+        </div>
     </div>
-
-    <button type="submit" class="btn btn-primary mt-3">Register</button>
-    <button type="button" class="btn btn-secondary mt-3 ml-2" @onclick="Cancel">Cancel</button>
 </EditForm>
 
 @code {
@@ -119,14 +137,14 @@
     private List<AvailabilityPeriod> localPeriods = new();
     private string? periodError;
 
-    private AvailabilityPeriod newPeriod = new() 
+    private AvailabilityPeriod newPeriod = new()
     {
         StartDate = DateTime.Today,
         EndDate = DateTime.Today.AddDays(1)
     };
 
-    private bool CanAddPeriod => 
-        newPeriod.StartDate != default && 
+    private bool CanAddPeriod =>
+        newPeriod.StartDate != default &&
         newPeriod.EndDate != default &&
         newPeriod.StartDate <= newPeriod.EndDate;
 
@@ -140,10 +158,16 @@
         imagePreviewUrl = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
     }
 
+    private void ClearImage()
+    {
+        imagePreviewUrl = null;
+        selectedFile = null;
+    }
+
     private async Task UploadImage(int equipmentId, IBrowserFile file)
     {
         using var content = new MultipartFormDataContent();
-        using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024); // 10MB max
+        using var fileStream = file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
         content.Add(new StreamContent(fileStream), "file", file.Name);
 
         await Http.PostAsync($"api/equipment/{equipmentId}/upload-image", content);
@@ -152,13 +176,13 @@
     private void AddPeriod()
     {
         periodError = null;
-        
+
         if (newPeriod.StartDate < DateTime.Today)
         {
             periodError = "Start date cannot be in the past";
             return;
         }
-        
+
         if (newPeriod.EndDate < DateTime.Today)
         {
             periodError = "End date cannot be in the past";
@@ -170,9 +194,8 @@
             periodError = "End date must be after start date";
             return;
         }
-        
-        // Check for overlaps with existing periods
-        if (localPeriods.Any(p => 
+
+        if (localPeriods.Any(p =>
             (newPeriod.StartDate >= p.StartDate && newPeriod.StartDate <= p.EndDate) ||
             (newPeriod.EndDate >= p.StartDate && newPeriod.EndDate <= p.EndDate) ||
             (newPeriod.StartDate <= p.StartDate && newPeriod.EndDate >= p.EndDate)))
@@ -180,15 +203,15 @@
             periodError = "This period overlaps with an existing availability period";
             return;
         }
-        
-        localPeriods.Add(new AvailabilityPeriod {
+
+        localPeriods.Add(new AvailabilityPeriod
+        {
             StartDate = newPeriod.StartDate,
             EndDate = newPeriod.EndDate
         });
-        
-        // Reset with default dates
+
         var nextStartDate = localPeriods.Max(p => p.EndDate).AddDays(1);
-        newPeriod = new AvailabilityPeriod 
+        newPeriod = new AvailabilityPeriod
         {
             StartDate = nextStartDate < DateTime.Today ? DateTime.Today : nextStartDate,
             EndDate = (nextStartDate < DateTime.Today ? DateTime.Today : nextStartDate).AddDays(1)
@@ -198,7 +221,6 @@
     private void RemovePeriod(AvailabilityPeriod period)
     {
         localPeriods.Remove(period);
-        StateHasChanged();
     }
 
     private async Task HandleValidSubmit()
@@ -209,21 +231,19 @@
 
             if (response.IsSuccessStatusCode)
             {
-                Console.WriteLine("Criei o equipamento!");
-
                 var createdEquipment = await response.Content.ReadFromJsonAsync<Equipment>();
 
                 foreach (var period in localPeriods)
                 {
-                    var periodToSend = new AvailabilityPeriod 
+                    var periodToSend = new AvailabilityPeriod
                     {
                         StartDate = period.StartDate,
                         EndDate = period.EndDate,
                         EquipmentId = createdEquipment.Id
                     };
-                
+
                     await Http.PostAsJsonAsync(
-                        $"api/equipment/{createdEquipment.Id}/availability", 
+                        $"api/equipment/{createdEquipment.Id}/availability",
                         periodToSend);
                 }
 

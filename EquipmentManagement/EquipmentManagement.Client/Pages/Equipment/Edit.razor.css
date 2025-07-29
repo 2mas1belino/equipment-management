@@ -79,7 +79,16 @@
         background-color: #f8f9fa;
     }
 
+.delete-image-btn {
+    margin-top: 10px;
+    width: 100%;
+}
+
 @@media (max-width: 768px) {
+    .details-container {
+        flex-direction: column;
+    }
+
     .period-input .col-md-5 {
         margin-bottom: 1rem;
     }
