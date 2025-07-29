@@ -30,6 +30,7 @@ namespace EquipmentManagement.Controllers
                     Name = e.Name,
                     Model = e.Model,
                     Description = e.Description,
+                    ImageData = e.ImageData,
                     ImageContentType = e.ImageContentType,
                     AvailabilityPeriods = e.AvailabilityPeriods.Select(a => new AvailabilityPeriodDto
                     {
@@ -58,6 +59,7 @@ namespace EquipmentManagement.Controllers
                 Name = equipment.Name,
                 Model = equipment.Model,
                 Description = equipment.Description,
+                ImageData = equipment.ImageData,
                 ImageContentType = equipment.ImageContentType,
                 AvailabilityPeriods = equipment.AvailabilityPeriods.Select(a => new AvailabilityPeriodDto
                 {
@@ -71,14 +73,22 @@ namespace EquipmentManagement.Controllers
 
         // PUT: api/equipment/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutEquipment(int id, Equipment equipment)
+        public async Task<IActionResult> PutEquipment(int id, EquipmentUpdateDto updateDto)
         {
-            if (id != equipment.Id)
+            if (id != updateDto.Id)
             {
-                return BadRequest();
+                return BadRequest("ID mismatch");
             }
 
-            _context.Entry(equipment).State = EntityState.Modified;
+            var equipment = await _context.Equipments.FindAsync(id);
+            if (equipment == null)
+            {
+                return NotFound();
+            }
+
+            equipment.Name = updateDto.Name;
+            equipment.Model = updateDto.Model;
+            equipment.Description = updateDto.Description;
 
             try
             {
@@ -90,10 +100,7 @@ namespace EquipmentManagement.Controllers
                 {
                     return NotFound();
                 }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
