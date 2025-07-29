@@ -1,0 +1,27 @@
+﻿.availability-section {
+    margin-top: 2rem;
+    border-top: 1px solid #dee2e6;
+    padding-top: 1.5rem;
+}
+
+.periods-list {
+    margin-top: 1rem;
+}
+
+.list-group-item {
+    transition: background-color 0.2s;
+}
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+
+@@media (max-width: 768px) {
+    .period-input .col-md-5 {
+        margin-bottom: 1rem;
+    }
+
+    .period-input .col-md-2 {
+        margin-bottom: 1rem;
+    }
+}
