@@ -42,6 +42,61 @@ else
             </div>
         </div>
 
+        <div class="availability-calendar">
+            <h4>Availability Calendar</h4>
+    
+            <div class="calendar-controls">
+                <button @onclick="() => ChangeMonth(-1)" class="btn btn-sm btn-outline-secondary">
+                    &lt; Previous
+                </button>
+                <span class="calendar-month">@currentMonth.ToString("MMMM yyyy")</span>
+                <button @onclick="() => ChangeMonth(1)" class="btn btn-sm btn-outline-secondary">
+                    Next &gt;
+                </button>
+            </div>
+
+            <div class="calendar-grid">
+                <div class="calendar-header">Sun</div>
+                <div class="calendar-header">Mon</div>
+                <div class="calendar-header">Tue</div>
+                <div class="calendar-header">Wed</div>
+                <div class="calendar-header">Thu</div>
+                <div class="calendar-header">Fri</div>
+                <div class="calendar-header">Sat</div>
+
+                @foreach (var day in calendarDays)
+                {
+                    <div class="calendar-day @GetDayClass(day)">
+                        @if (day != DateTime.MinValue)
+                        {
+                            <div class="day-number">@day.Day</div>
+                            <div class="day-status">
+                                @if (IsAvailable(day))
+                                {
+                                    <span class="badge available">Available</span>
+                                }
+                                else
+                                {
+                                    <span class="badge unavailable">Booked</span>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+    
+            <div class="calendar-footer">
+                <div class="legend">
+                    <span class="legend-item available"></span>
+                    <span>Available</span>
+                    <span class="legend-item unavailable"></span>
+                    <span>Booked</span>
+                    <span class="legend-item today"></span>
+                    <span>Today</span>
+                </div>
+            </div>
+        </div>
+
         <div class="button-group">
             <button @onclick="ReturnToList" class="btn btn-secondary">Back to List</button>
         </div>
@@ -53,6 +108,11 @@ else
     public string Id { get; set; }
 
     private Equipment? equipment;
+
+    private List<AvailabilityPeriod> availabilityPeriods = new();
+    private DateTime currentMonth = DateTime.Today;
+    private List<DateTime> calendarDays = new();
+
     private string? ImageUrl => HasImage ? $"data:{equipment!.ImageContentType};base64,{Convert.ToBase64String(equipment.ImageData!)}" : null;
     private bool HasImage => equipment?.ImageData != null && equipment.ImageContentType != null;
 
@@ -61,11 +121,69 @@ else
         try
         {
             equipment = await Http.GetFromJsonAsync<Equipment>($"api/equipment/{Id}");
+            if (equipment != null)
+            {
+                availabilityPeriods = await Http.GetFromJsonAsync<List<AvailabilityPeriod>>($"api/equipment/{Id}/availability");
+                GenerateCalendarDays();
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error loading equipment: {ex.Message}");
         }
+    }
+
+    private void GenerateCalendarDays()
+    {
+        calendarDays.Clear();
+        
+        // Get first day of month and how many days to show from previous month
+        var firstDayOfMonth = new DateTime(currentMonth.Year, currentMonth.Month, 1);
+        int daysFromPreviousMonth = ((int)firstDayOfMonth.DayOfWeek + 6) % 7; // Adjust to make Monday first day if needed
+        
+        // Get last day of month
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        
+        // Generate calendar days
+        var currentDate = firstDayOfMonth.AddDays(-daysFromPreviousMonth);
+        
+        // We always show 6 weeks (42 days) to keep calendar size consistent
+        for (int i = 0; i < 42; i++)
+        {
+            if (currentDate.Month == currentMonth.Month || 
+                (currentDate < firstDayOfMonth && i < 7) || 
+                (currentDate > lastDayOfMonth && i > 27))
+            {
+                calendarDays.Add(currentDate);
+            }
+            else
+            {
+                calendarDays.Add(DateTime.MinValue); // Placeholder for empty cells
+            }
+            currentDate = currentDate.AddDays(1);
+        }
+    }
+
+    private bool IsAvailable(DateTime day)
+    {
+        return availabilityPeriods.Any(p => day.Date >= p.StartDate.Date && day.Date <= p.EndDate.Date);
+    }
+
+    private void ChangeMonth(int months)
+    {
+        currentMonth = currentMonth.AddMonths(months);
+        GenerateCalendarDays();
+    }
+    
+    private string GetDayClass(DateTime day)
+    {
+        var classes = new List<string>();
+        
+        if (day == DateTime.MinValue) classes.Add("empty");
+        if (day.Date == DateTime.Today) classes.Add("today");
+        if (day.Month != currentMonth.Month) classes.Add("other-month");
+        
+        return string.Join(" ", classes);
     }
 
     private void ReturnToList()
