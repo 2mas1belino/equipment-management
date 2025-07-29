@@ -22,7 +22,9 @@
 
     <div class="form-group">
         <label for="description">Description:</label>
-        <InputTextArea id="description" @bind-Value="newEquipment.Description" class="form-control" />
+        <InputTextArea @bind-Value="newEquipment.Description" 
+                       placeholder="Enter description (optional)"
+                       class="form-control detail-value" />
     </div>
 
     <div class="form-group">

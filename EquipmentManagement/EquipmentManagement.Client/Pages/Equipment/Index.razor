@@ -33,7 +33,16 @@ else
                 <tr>
                     <td>@item.Name</td>
                     <td>@item.Model</td>
-                    <td>@item.Description</td>
+                    <td>
+                        @if (string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <span class="text-muted">No description provided</span>
+                        }
+                        else
+                        {
+                            @item.Description
+                        }
+                    </td>
                     <td>
                         <a href="/equipment/@item.Id" class="btn btn-info btn-sm">Details</a>
                         <a href="/equipment/edit/@item.Id" class="btn btn-primary">Edit</a>

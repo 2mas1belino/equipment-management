@@ -37,7 +37,14 @@ else
 
                 <div class="detail-row">
                     <span class="detail-label">Description:</span>
-                    <span class="detail-value">@equipment.Description</span>
+                    @if (string.IsNullOrWhiteSpace(equipment.Description))
+                    {
+                        <span class="text-muted">No description provided</span>
+                    }
+                    else
+                    {
+                        <span class="detail-value">@equipment.Description</span>
+                    }
                 </div>
             </div>
         </div>
