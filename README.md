@@ -42,6 +42,7 @@ It is built with **ASP.NET 9.0 (Core Hosted)**, **Blazor WebAssembly**, and **En
    ```
 
 2. **Set up the database**
+
     Update the connection string in appsettings.json inside the Server project (EquipmentManagement).
 
     Run the EF Core migrations:
@@ -49,7 +50,7 @@ It is built with **ASP.NET 9.0 (Core Hosted)**, **Blazor WebAssembly**, and **En
     dotnet ef database update --project EquipmentManagement
     ```
 
-3. **Run the application**
+4. **Run the application**
     ```bash
     dotnet run --project EquipmentManagement
     ```
