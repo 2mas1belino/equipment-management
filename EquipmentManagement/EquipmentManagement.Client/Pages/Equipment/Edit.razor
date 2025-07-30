@@ -142,6 +142,7 @@ else
     private IBrowserFile? selectedFile;
     private string? ImageUrl => HasImage ? $"data:{equipment!.ImageContentType};base64,{Convert.ToBase64String(equipment.ImageData!)}" : null;
     private bool HasImage => equipment?.ImageData != null && equipment.ImageContentType != null;
+    private bool deleteImageOnSave = false;
 
     // Availability management
     private List<AvailabilityPeriod> localPeriods = new();
@@ -250,10 +251,14 @@ else
                         });
                 }
 
-                // Update image if changed
                 if (selectedFile != null)
                 {
                     await UploadImage(equipment.Id, selectedFile);
+                }
+
+                if (deleteImageOnSave)
+                {
+                    await Http.DeleteAsync($"api/equipment/{equipment.Id}/image");
                 }
 
                 NavManager.NavigateTo($"/equipment/{equipment.Id}");
@@ -288,19 +293,11 @@ else
     private async Task DeleteImage()
     {
         if (equipment == null) return;
-        
-        try 
-        {
-            equipment.ImageData = null;
-            equipment.ImageContentType = null;
-            
-            var response = await Http.DeleteAsync($"api/equipment/{equipment.Id}/image");
-            
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error deleting image: {ex.Message}");
-        }
+
+        equipment.ImageData = null;
+        equipment.ImageContentType = null;
+
+        deleteImageOnSave = true;
     }
 
     private void Cancel()

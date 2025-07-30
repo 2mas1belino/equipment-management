@@ -202,6 +202,20 @@ namespace EquipmentManagement.Controllers
             return File(equipment.ImageData, equipment.ImageContentType);
         }
 
+        // DELETE api/equipment/{id}/image
+        [HttpDelete("{id}/image")]
+        public async Task<IActionResult> DeleteImage(int id)
+        {
+            var equipment = await _context.Equipments.FindAsync(id);
+            if (equipment == null)
+                return NotFound();
+
+            equipment.ImageData = null;
+            equipment.ImageContentType = null;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
 
         // POST api/equipment/{id}/availability
         [HttpPost("{equipmentId}/availability")]
