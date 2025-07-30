@@ -2,7 +2,7 @@
 
 namespace EquipmentManagement.Shared.Dtos
 {
-    public class EquipmentDto
+    public class EquipmentUpdateDto
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
@@ -15,14 +15,5 @@ namespace EquipmentManagement.Shared.Dtos
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
-
-        [JsonPropertyName("imageData")]
-        public byte[]? ImageData { get; set; }
-
-        [JsonPropertyName("imageContentType")]
-        public string? ImageContentType { get; set; }
-
-        [JsonPropertyName("availabilityPeriods")]
-        public List<AvailabilityPeriodDto> AvailabilityPeriods { get; set; } = new();
     }
 }
