@@ -25,7 +25,10 @@ It is built with **ASP.NET 9.0 (Core Hosted)**, **Blazor WebAssembly**, and **En
 ## Prerequisites
 
 - [.NET 9.0 SDK](https://dotnet.microsoft.com/en-us/download)  
-- SQL Server
+- Microsoft.AspNetCore.Components.WebAssmbly.Server package
+- Microsoft.EntityFrameworkCore package
+- Microsoft.EntityFrameworkCore.SqlServer package
+- Microsoft.EntityFramworkCore.Tools package
 - (Optional) Visual Studio 2022 or Visual Studio Code  
 
 ---
@@ -39,7 +42,6 @@ It is built with **ASP.NET 9.0 (Core Hosted)**, **Blazor WebAssembly**, and **En
    ```
 
 2. **Set up the database**
-
     Update the connection string in appsettings.json inside the Server project (EquipmentManagement).
 
     Run the EF Core migrations:
@@ -65,15 +67,15 @@ It is built with **ASP.NET 9.0 (Core Hosted)**, **Blazor WebAssembly**, and **En
 
 ## API Overview
 
-- GET /api/equipment - Get all equipment (paginated)
-- POST /api/equipment - Create equipment
-- PUT /api/equipment/{id} - Update equipment
-- DELETE /api/equipment/{id} - Delete equipment
-- POST /api/equipment/{id}/upload-image - Upload equipment image
-- DELETE /api/equipment/{id}/image - Remove equipment image
-- GET /api/equipment/{id}/availability - Get availability periods
-- POST /api/equipment/{id}/availability - Add availability period
-- DELETE /api/equipment/availability/{id} - Remove availability period
+- ```GET /api/equipment``` - Get all equipment (paginated)
+- ```POST /api/equipment``` - Create equipment
+- ```PUT /api/equipment/{id}``` - Update equipment
+- ```DELETE /api/equipment/{id}``` - Delete equipment
+- ```POST /api/equipment/{id}/upload-image``` - Upload equipment image
+- ```DELETE /api/equipment/{id}/image``` - Remove equipment image
+- ```GET /api/equipment/{id}/availability``` - Get availability periods
+- ```POST /api/equipment/{id}/availability``` - Add availability period
+- ```DELETE /api/equipment/availability/{id}``` - Remove availability period
 
 ---
 
