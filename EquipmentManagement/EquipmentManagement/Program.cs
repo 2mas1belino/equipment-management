@@ -45,6 +45,7 @@ app.MapFallbackToFile("index.html");
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(EquipmentManagement.Client._Imports).Assembly);

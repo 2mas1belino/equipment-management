@@ -1,4 +1,5 @@
-﻿@page "/equipments"
+﻿@page "/"
+@page "/equipments"
 @using System.Text.Json
 @inject HttpClient Http;
 
@@ -11,14 +12,7 @@
     </a>
 </div>
 
-@if (errorMessage != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        @errorMessage
-        <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
-    </div>
-}
-else if (isLoading)
+@if (isLoading)
 {
     <div class="loading-spinner">
         <div class="spinner-border text-primary" role="status">
@@ -148,13 +142,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
         await LoadEquipment();
     }
 
     private async Task LoadEquipment()
     {
         isLoading = true;
-        StateHasChanged();
 
         try
         {
