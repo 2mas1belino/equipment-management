@@ -7,7 +7,11 @@
 
 @if (equipment == null)
 {
-    <p><em>Loading...</em></p>
+    <div class="loading-spinner">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
 }
 else
 {

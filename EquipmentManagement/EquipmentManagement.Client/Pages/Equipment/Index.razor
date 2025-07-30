@@ -136,6 +136,7 @@ else
 
 @code {
     private List<EquipmentDto> equipments = new();
+
     private string? errorMessage;
     private bool isLoading = true;
     private bool showDeleteModal = false;
@@ -215,7 +216,7 @@ else
         var response = await Http.DeleteAsync($"api/equipment/{equipmentToDelete}");
         if (response.IsSuccessStatusCode)
         {
-            await LoadEquipment();
+            equipments.RemoveAll(e => e.Id == equipmentToDelete);
         }
         else
         {
